@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <type_traits>
 
-namespace Ren {
+namespace Phy {
 enum eUninitialized { Uninitialize };
 
 template <typename T, int N> class Vec {
@@ -104,6 +104,10 @@ template <typename T, int N> class Vec {
             res.data_[i] = -v.data_[i];
         }
         return res;
+    }
+
+    friend Vec<T, N> operator+(const Vec<T, N>& v) {
+        return v;
     }
 
     friend Vec<T, N> operator+(const Vec<T, N> &lhs, const Vec<T, N> &rhs) {

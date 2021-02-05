@@ -24,6 +24,8 @@ void Transform::UpdateBBox() {
 void Transform::UpdateInvMatrix() { inv_mat = Ren::Inverse(mat); }
 
 void Transform::Read(const JsObject &js_in, Transform &tr) {
+    tr.mat = Ren::Mat4f{1.0f};
+
     if (js_in.Has("pos")) {
         const JsArray &js_pos = js_in.at("pos").as_arr();
 
@@ -56,6 +58,18 @@ void Transform::Read(const JsObject &js_in, Transform &tr) {
         tr.mat = tr.mat * rot_all;
     }
 
+    if (js_in.Has("scale")) {
+        const JsArray &js_scale = js_in.at("scale").as_arr();
+
+        tr.scale[0] = float(js_scale[0].as_num().val);
+        tr.scale[1] = float(js_scale[1].as_num().val);
+        tr.scale[2] = float(js_scale[2].as_num().val);
+
+        tr.mat = Ren::Scale(tr.mat, tr.scale);
+    } else {
+        tr.scale = Ren::Vec3f{1.0f, 1.0f, 1.0f};
+    }
+
     tr.UpdateInvMatrix();
 }
 
@@ -63,9 +77,9 @@ void Transform::Write(const Transform &tr, JsObject &js_out) {
     { // write position
         JsArray js_pos;
 
-        js_pos.Push(JsNumber(double(tr.mat[3][0])));
-        js_pos.Push(JsNumber(double(tr.mat[3][1])));
-        js_pos.Push(JsNumber(double(tr.mat[3][2])));
+        js_pos.Push(JsNumber(tr.mat[3][0]));
+        js_pos.Push(JsNumber(tr.mat[3][1]));
+        js_pos.Push(JsNumber(tr.mat[3][2]));
 
         js_out.Push("pos", std::move(js_pos));
     }
@@ -76,11 +90,21 @@ void Transform::Write(const Transform &tr, JsObject &js_out) {
         const Ren::Vec3f euler_angles_deg =
             tr.euler_angles_rad * 180.0f / Ren::Pi<float>();
 
-        js_rot.Push(JsNumber(double(euler_angles_deg[0])));
-        js_rot.Push(JsNumber(double(euler_angles_deg[1])));
-        js_rot.Push(JsNumber(double(euler_angles_deg[2])));
+        js_rot.Push(JsNumber(euler_angles_deg[0]));
+        js_rot.Push(JsNumber(euler_angles_deg[1]));
+        js_rot.Push(JsNumber(euler_angles_deg[2]));
 
         js_out.Push("rot", std::move(js_rot));
+    }
+
+    if (tr.scale[0] != 1.0f || tr.scale[1] != 1.0f || tr.scale[2] != 1.0f) {
+        JsArray js_scale;
+
+        js_scale.Push(JsNumber{tr.scale[0]});
+        js_scale.Push(JsNumber{tr.scale[1]});
+        js_scale.Push(JsNumber{tr.scale[2]});
+
+        js_out.Push("scale", std::move(js_scale));
     }
 }
 

@@ -4,15 +4,26 @@
 
 #include "MVec.h"
 
-namespace Ren {
-template <typename T> class Quat {
+namespace Phy {
+template <typename T> class QuatT {
   public:
     T x, y, z, w;
 
-    explicit Quat(eUninitialized) {}
-    Quat() : x(0), y(0), z(0), w(0) {}
+    explicit QuatT(eUninitialized) {}
+    QuatT() : x(0), y(0), z(0), w(1) {}
+    QuatT(const T _x, const T _y, const T _z, const T _w) : x(_x), y(_y), z(_z), w(_w) {}
+    QuatT(Vec<T, 3> n, const T angle_rad) {
+        const T half_angle_rad = T(0.5) * angle_rad;
 
-    Quat(const T _x, const T _y, const T _z, const T _w) : x(_x), y(_y), z(_z), w(_w) {}
+        w = std::cos(half_angle_rad);
+
+        const T half_sine = std::sin(half_angle_rad);
+
+        n = Normalize(n);
+        x = n[0] * half_sine;
+        y = n[1] * half_sine;
+        z = n[2] * half_sine;
+    }
 
     T &operator[](const int i) {
         T *data = &x;
@@ -23,7 +34,7 @@ template <typename T> class Quat {
         return data[i];
     }
 
-    Quat<T> &operator+=(const Quat<T> &rhs) {
+    QuatT<T> &operator+=(const QuatT<T> &rhs) {
         x += rhs.x;
         y += rhs.y;
         z += rhs.z;
@@ -31,7 +42,7 @@ template <typename T> class Quat {
         return *this;
     }
 
-    Quat<T> &operator-=(const Quat<T> &rhs) {
+    QuatT<T> &operator-=(const QuatT<T> &rhs) {
         x -= rhs.x;
         y -= rhs.y;
         z -= rhs.z;
@@ -39,7 +50,7 @@ template <typename T> class Quat {
         return *this;
     }
 
-    Quat<T> &operator*=(const T rhs) {
+    QuatT<T> &operator*=(const T rhs) {
         x *= rhs;
         y *= rhs;
         z *= rhs;
@@ -47,7 +58,7 @@ template <typename T> class Quat {
         return *this;
     }
 
-    Quat<T> &operator/=(const T rhs) {
+    QuatT<T> &operator/=(const T rhs) {
         x /= rhs;
         y /= rhs;
         z /= rhs;
@@ -55,8 +66,8 @@ template <typename T> class Quat {
         return *this;
     }
 
-    friend Quat<T> operator-(const Quat<T> &v) {
-        auto res = Quat<T>{Uninitialize};
+    friend QuatT<T> operator-(const QuatT<T> &v) {
+        auto res = QuatT<T>{Uninitialize};
 
         res.x = -v.x;
         res.y = -v.y;
@@ -66,8 +77,8 @@ template <typename T> class Quat {
         return res;
     }
 
-    friend Quat<T> operator*(const T lhs, const Quat<T> &rhs) {
-        auto res = Quat<T>{Uninitialize};
+    friend QuatT<T> operator*(const T lhs, const QuatT<T> &rhs) {
+        auto res = QuatT<T>{Uninitialize};
 
         res.x = lhs * rhs.x;
         res.y = lhs * rhs.y;
@@ -77,8 +88,8 @@ template <typename T> class Quat {
         return res;
     }
 
-    friend Quat<T> operator/(const T lhs, const Quat<T> &rhs) {
-        auto res = Quat<T>{Uninitialize};
+    friend QuatT<T> operator/(const T lhs, const QuatT<T> &rhs) {
+        auto res = QuatT<T>{Uninitialize};
 
         res.x = lhs / rhs.x;
         res.y = lhs / rhs.y;
@@ -88,8 +99,8 @@ template <typename T> class Quat {
         return res;
     }
 
-    friend Quat<T> operator*(const Quat<T> &lhs, const T rhs) {
-        auto res = Quat<T>{Uninitialize};
+    friend QuatT<T> operator*(const QuatT<T> &lhs, const T rhs) {
+        auto res = QuatT<T>{Uninitialize};
 
         res.x = lhs.x * rhs;
         res.y = lhs.y * rhs;
@@ -99,8 +110,8 @@ template <typename T> class Quat {
         return res;
     }
 
-    friend Quat<T> operator/(const Quat<T> &lhs, const T rhs) {
-        auto res = Quat<T>{Uninitialize};
+    friend QuatT<T> operator/(const QuatT<T> &lhs, const T rhs) {
+        auto res = QuatT<T>{Uninitialize};
 
         res.x = lhs.x / rhs;
         res.y = lhs.y / rhs;
@@ -110,8 +121,8 @@ template <typename T> class Quat {
         return res;
     }
 
-    friend Quat<T> operator+(const Quat<T> &lhs, const Quat<T> &rhs) {
-        auto res = Quat<T>{Uninitialize};
+    friend QuatT<T> operator+(const QuatT<T> &lhs, const QuatT<T> &rhs) {
+        auto res = QuatT<T>{Uninitialize};
         res.x = lhs.x + rhs.x;
         res.y = lhs.y + rhs.y;
         res.z = lhs.z + rhs.z;
@@ -119,8 +130,8 @@ template <typename T> class Quat {
         return res;
     }
 
-    friend Quat<T> operator-(const Quat<T> &lhs, const Quat<T> &rhs) {
-        auto res = Quat<T>{Uninitialize};
+    friend QuatT<T> operator-(const QuatT<T> &lhs, const QuatT<T> &rhs) {
+        auto res = QuatT<T>{Uninitialize};
         res.x = lhs.x - rhs.x;
         res.y = lhs.y - rhs.y;
         res.z = lhs.z - rhs.z;
@@ -128,8 +139,8 @@ template <typename T> class Quat {
         return res;
     }
 
-    friend Quat<T> operator*(const Quat<T> &lhs, const Quat<T> &rhs) {
-        auto res = Quat<T>{Uninitialize};
+    friend QuatT<T> operator*(const QuatT<T> &lhs, const QuatT<T> &rhs) {
+        auto res = QuatT<T>{Uninitialize};
 
         res.w = lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z;
         res.x = lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y;
@@ -140,30 +151,53 @@ template <typename T> class Quat {
     }
 };
 
-template <typename T> T Dot(const Quat<T> &lhs, const Quat<T> &rhs) {
+template <typename T> T Dot(const QuatT<T> &lhs, const QuatT<T> &rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
 }
 
-template <typename T> T Roll(const Quat<T> &q) {
+template <typename T> QuatT<T> Inverse(const QuatT<T>& q) {
+    auto res = QuatT<T>{ Uninitialize };
+
+    res /= Dot(q, q);
+    res.x = -res.x;
+    res.y = -res.y;
+    res.z = -res.z;
+
+    return res;
+}
+
+template <typename T> T Roll(const QuatT<T> &q) {
     return std::atan2(T(2) * (q.x * q.y + q.w * q.z),
                       q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z);
 }
 
-template <typename T> T Pitch(const Quat<T> &q) {
+template <typename T> T Pitch(const QuatT<T> &q) {
     return std::atan2(T(2) * (q.y * q.z + q.w * q.x),
                       q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
 }
 
-template <typename T> T Yaw(const Quat<T> &q) {
+template <typename T> T Yaw(const QuatT<T> &q) {
     return std::asin(clamp(T(-2) * (q.x * q.z - q.w * q.y), T(-1), T(1)));
 }
 
-template <typename T> Vec<T, 3> EulerAngles(const Quat<T> &q) {
+template <typename T> Vec<T, 3> EulerAngles(const QuatT<T> &q) {
     return Vec<T, 3>{Pitch(q), Yaw(q), Roll(q)};
 }
 
-template <typename T> Quat<T> Slerp(const Quat<T> &q0, const Quat<T> &q1, const T a) {
-    Quat<T> q2 = q1;
+template <typename T> QuatT<T> Normalize(const QuatT<T>& q) {
+    auto res = QuatT<T>{ Uninitialize };
+
+    const T inv_len = T(1) / std::sqrt(Dot(q, q));
+    res.x = q.x * inv_len;
+    res.y = q.y * inv_len;
+    res.z = q.z * inv_len;
+    res.w = q.w * inv_len;
+
+    return res;
+}
+
+template <typename T> QuatT<T> Slerp(const QuatT<T> &q0, const QuatT<T> &q1, const T a) {
+    QuatT<T> q2 = q1;
 
     T cos_theta = Dot(q0, q1);
 
@@ -173,8 +207,8 @@ template <typename T> Quat<T> Slerp(const Quat<T> &q0, const Quat<T> &q1, const 
     }
 
     if (cos_theta > 1 - std::numeric_limits<T>::epsilon()) {
-        return Quat<T>{Mix(q0.x, q1.x, a), Mix(q0.y, q1.y, a), Mix(q0.z, q1.z, a),
-                       Mix(q0.w, q1.w, a)};
+        return QuatT<T>{Mix(q0.x, q1.x, a), Mix(q0.y, q1.y, a), Mix(q0.z, q1.z, a),
+                        Mix(q0.w, q1.w, a)};
     } else {
         const T angle = std::acos(cos_theta);
         return (std::sin((T(1) - a) * angle) * q0 + std::sin(a * angle) * q2) /
@@ -182,7 +216,7 @@ template <typename T> Quat<T> Slerp(const Quat<T> &q0, const Quat<T> &q1, const 
     }
 }
 
-template <typename T> Mat<T, 3, 3> ToMat3(const Quat<T> &vec) {
+template <typename T> Mat<T, 3, 3> ToMat3(const QuatT<T> &vec) {
     Mat<T, 3, 3> ret;
 
     const T qxx = vec[0] * vec[0];
@@ -210,14 +244,33 @@ template <typename T> Mat<T, 3, 3> ToMat3(const Quat<T> &vec) {
     return ret;
 }
 
-template <typename T> Mat<T, 4, 4> ToMat4(const Quat<T> &vec) {
+template <typename T>
+QuatT<T> ToQuat(const T yaw /* Z */, const T pitch /* Y */, const T roll /* X */) {
+    const T cy = std::cos(yaw * T(0.5));
+    const T sy = std::sin(yaw * T(0.5));
+    const T cp = std::cos(pitch * T(0.5));
+    const T sp = std::sin(pitch * T(0.5));
+    const T cr = std::cos(roll * T(0.5));
+    const T sr = std::sin(roll * T(0.5));
+
+    QuatT<T> q;
+
+    q.w = cr * cp * cy + sr * sp * sy;
+    q.x = sr * cp * cy - cr * sp * sy;
+    q.y = cr * sp * cy + sr * cp * sy;
+    q.z = cr * cp * sy - sr * sp * cy;
+
+    return q;
+}
+
+template <typename T> Mat<T, 4, 4> ToMat4(const QuatT<T> &vec) {
     return Mat<T, 4, 4>{ToMat3(vec)};
 }
 
-template <typename T> Quat<T> MakeQuat(const T *v) {
-    return Quat<T>{v[0], v[1], v[2], v[3]};
+template <typename T> QuatT<T> MakeQuat(const T *v) {
+    return QuatT<T>{v[0], v[1], v[2], v[3]};
 }
 
-using Quatf = Quat<float>;
-using Quatd = Quat<double>;
-} // namespace Ren
+using Quatf = QuatT<float>;
+using Quatd = QuatT<double>;
+} // namespace Phy

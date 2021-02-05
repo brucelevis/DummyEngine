@@ -33,15 +33,15 @@ void LightProbe::Write(const LightProbe &pr, JsObject &js_out) {
     { // write offset
         JsArray js_offset;
 
-        js_offset.Push(JsNumber(double(pr.offset[0])));
-        js_offset.Push(JsNumber(double(pr.offset[1])));
-        js_offset.Push(JsNumber(double(pr.offset[2])));
+        js_offset.Push(JsNumber(pr.offset[0]));
+        js_offset.Push(JsNumber(pr.offset[1]));
+        js_offset.Push(JsNumber(pr.offset[2]));
 
         js_out.Push("offset", std::move(js_offset));
     }
 
     { // write radius
-        js_out.Push("radius", JsNumber(double(pr.radius)));
+        js_out.Push("radius", JsNumber(pr.radius));
     }
 
     { // write sh coefficients
@@ -50,9 +50,9 @@ void LightProbe::Write(const LightProbe &pr, JsObject &js_out) {
         for (int i = 0; i < 4; i++) {
             JsArray js_coeff;
 
-            js_coeff.Push(JsNumber(double(pr.sh_coeffs[i][0])));
-            js_coeff.Push(JsNumber(double(pr.sh_coeffs[i][1])));
-            js_coeff.Push(JsNumber(double(pr.sh_coeffs[i][2])));
+            js_coeff.Push(JsNumber(pr.sh_coeffs[i][0]));
+            js_coeff.Push(JsNumber(pr.sh_coeffs[i][1]));
+            js_coeff.Push(JsNumber(pr.sh_coeffs[i][2]));
 
             js_coeffs.Push(std::move(js_coeff));
         }
