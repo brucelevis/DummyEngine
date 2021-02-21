@@ -35,7 +35,7 @@ struct JsLiteral {
     }
 
     bool Read(std::istream &in);
-    void Write(std::ostream &out, JsFlags flags = JsFlags()) const;
+    void Write(std::ostream &out, JsFlags flags = {}) const;
 
     static const JsType type = JsType::Literal;
 };
@@ -68,7 +68,7 @@ struct JsNumber {
     }
 
     bool Read(std::istream &in);
-    void Write(std::ostream &out, JsFlags flags = JsFlags()) const;
+    void Write(std::ostream &out, JsFlags flags = {}) const;
 
     static const JsType type = JsType::Number;
 };
@@ -85,7 +85,7 @@ struct JsString {
     }
 
     bool Read(std::istream &in);
-    void Write(std::ostream &out, JsFlags flags = JsFlags()) const;
+    void Write(std::ostream &out, JsFlags flags = {}) const;
 
     static const JsType type = JsType::String;
 };
@@ -121,7 +121,7 @@ struct JsArray {
     void Push(JsElement&& el);
 
     bool Read(std::istream &in);
-    void Write(std::ostream &out, JsFlags flags = JsFlags()) const;
+    void Write(std::ostream &out, JsFlags flags = {}) const;
 
     static const JsType type = JsType::Array;
 };
@@ -154,7 +154,7 @@ struct JsObject {
     size_t Push(const std::string &s, JsElement &&el);
 
     bool Read(std::istream &in);
-    void Write(std::ostream &out, JsFlags flags = JsFlags()) const;
+    void Write(std::ostream &out, JsFlags flags = {}) const;
 
     static const JsType type = JsType::Object;
 };
@@ -215,6 +215,6 @@ public:
     }
 
     bool Read(std::istream &in);
-    void Write(std::ostream &out, JsFlags flags = JsFlags()) const;
+    void Write(std::ostream &out, JsFlags flags = {}) const;
 };
 

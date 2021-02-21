@@ -21,7 +21,9 @@ set(SOURCE_FILES    Body.h
                     MQuat.h
                     MVec.h
                     Shape.h
-                    Shape.cpp)
+                    Shape.cpp
+                    Utils.h
+                    Utils.cpp)
 
 list(APPEND ALL_SOURCE_FILES ${SOURCE_FILES})
 

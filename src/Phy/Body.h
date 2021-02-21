@@ -5,6 +5,8 @@
 #include "Shape.h"
 
 namespace Phy {
+struct point_t;
+
 class Body {
   public:
     Vec3 pos;
@@ -26,7 +28,10 @@ class Body {
     void ApplyImpulseLinear(const Vec3 &impulse);
     void ApplyImpulseAngular(const Vec3 &impulse);
 
-    void Update(const real dt_s);
+    void Update(real dt_s);
+
+    static void SupportOfMinkowskiSum(const Body &a, const Body &b, Vec3 dir,
+                                      const real bias, point_t &out_point);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +56,9 @@ inline bool operator<(const contact_t &c1, const contact_t &c2) {
 
 bool Intersect(Body *a, Body *b, const real dt, contact_t &out_contact);
 void ResolveContact(contact_t &contact);
+
+// Gilbert-Johnson-Keerthi (GJK)
+bool GJK_DoesIntersect(const Body &a, const Body &b);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

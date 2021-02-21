@@ -13,6 +13,8 @@ class Bounds {
     void Expand(const Vec3 &pt);
     void Expand(const Bounds &rhs);
 
+    void ToPoints(Vec3 out_points[8]) const;
+
     real width(const int i) const { return maxs[i] - mins[i]; }
 
     Vec3 mins;
@@ -38,6 +40,18 @@ inline void Bounds::Expand(const Vec3& pt) {
 inline void Bounds::Expand(const Bounds& rhs) {
     mins = Min(mins, rhs.mins);
     maxs = Max(maxs, rhs.maxs);
+}
+
+inline void Bounds::ToPoints(Vec3 out_points[8]) const {
+    out_points[0] = Vec3{ mins[0], mins[1], mins[2] };
+    out_points[1] = Vec3{ maxs[0], mins[1], mins[2] };
+    out_points[2] = Vec3{ mins[0], maxs[1], mins[2] };
+    out_points[3] = Vec3{ mins[0], mins[1], maxs[2] };
+
+    out_points[4] = Vec3{ maxs[0], maxs[1], maxs[2] };
+    out_points[5] = Vec3{ mins[0], maxs[1], maxs[2] };
+    out_points[6] = Vec3{ maxs[0], mins[1], maxs[2] };
+    out_points[7] = Vec3{ maxs[0], maxs[1], mins[2] };
 }
 
 inline bool Intersect(const Bounds& b1, const Bounds& b2) {

@@ -69,6 +69,18 @@ void Physics::Read(const JsObject &js_in, Physics &ph) {
         if (js_shape_type.val == "sphere") {
             const JsNumber &js_radius = js_shape.at("radius").as_num();
             ph.body.shape.reset(new Phy::ShapeSphere{real(js_radius.val)});
+        } else if (js_shape_type.val == "box") {
+            const JsArray &js_points = js_shape.at("points").as_arr();
+
+            std::unique_ptr<Phy::Vec3[]> points(new Phy::Vec3[js_points.Size()]);
+            for (size_t i = 0; i < js_points.Size(); i++) {
+                const JsArray &js_point = js_points[i].as_arr();
+                points[i] = Phy::Vec3{real(js_point[0].as_num().val),
+                                      real(js_point[1].as_num().val),
+                                      real(js_point[2].as_num().val)};
+            }
+
+            ph.body.shape.reset(new Phy::ShapeBox{points.get(), int(js_points.Size())});
         }
     }
 }

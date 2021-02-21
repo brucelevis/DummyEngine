@@ -47,8 +47,8 @@ void GSPhyTest::OnPreloadScene(JsObject &js_scene) {
     for (int x = 0; x < 6; x++) {
         for (int z = 0; z < 6; z++) {
             const double Radius = 0.5;
-            const double xx = double(x - 1) * Radius * 1.5;
-            const double zz = double(z - 1) * Radius * 1.5;
+            const double xx = double(x - 1LL) * Radius * 1.5;
+            const double zz = double(z - 1LL) * Radius * 1.5;
 
             JsObject new_object;
 
@@ -104,8 +104,8 @@ void GSPhyTest::OnPreloadScene(JsObject &js_scene) {
     for (int x = 0; x < 3; x++) {
         for (int z = 0; z < 3; z++) {
             const double Radius = 80;
-            const double xx = double(x - 1) * Radius * 0.25;
-            const double zz = double(z - 1) * Radius * 0.25;
+            const double xx = double(x - 1LL) * Radius * 0.25;
+            const double zz = double(z - 1LL) * Radius * 0.25;
 
             JsObject new_object;
 

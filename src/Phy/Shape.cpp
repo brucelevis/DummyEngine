@@ -1,132 +1,12 @@
 #include "Shape.h"
 
+#include "Utils.h"
+
 namespace PhyInternal {
 using namespace Phy;
 
 const real CollisionEps = real(0.001);
 const real HullPtsEps = real(0.01);
-
-bool RaySphere(const Vec3 &ro, const Vec3 &rd, const Vec3 &center, const real radius,
-               real &t1, real &t2) {
-
-    const Vec3 m = center - ro;
-    const real a = Dot(rd, rd);
-    const real b = Dot(m, rd);
-    const real c = Dot(m, m) - radius * radius;
-
-    const real discr = b * b - a * c;
-    const real inv_a = real(1) / a;
-
-    if (discr < real(0)) {
-        return false;
-    }
-
-    const real discr_sqrt = std::sqrt(discr);
-    t1 = inv_a * (b - discr_sqrt);
-    t2 = inv_a * (b + discr_sqrt);
-
-    return true;
-}
-
-void PointsFromBounds(const Bounds &bounds, Vec3 out_points[8]) {
-    out_points[0] = Vec3{bounds.mins[0], bounds.mins[1], bounds.mins[2]};
-    out_points[1] = Vec3{bounds.maxs[0], bounds.mins[1], bounds.mins[2]};
-    out_points[2] = Vec3{bounds.mins[0], bounds.maxs[1], bounds.mins[2]};
-    out_points[3] = Vec3{bounds.mins[0], bounds.mins[1], bounds.maxs[2]};
-
-    out_points[4] = Vec3{bounds.maxs[0], bounds.maxs[1], bounds.maxs[2]};
-    out_points[5] = Vec3{bounds.mins[0], bounds.maxs[1], bounds.maxs[2]};
-    out_points[6] = Vec3{bounds.maxs[0], bounds.mins[1], bounds.maxs[2]};
-    out_points[7] = Vec3{bounds.maxs[0], bounds.maxs[1], bounds.mins[2]};
-}
-
-int FindPointFurthestInDir(const Vec3 pts[], const int count, const Vec3 &dir) {
-    int max_ndx = 0;
-    real max_dist = Dot(dir, pts[0]);
-    for (int i = 1; i < count; i++) {
-        const real dist = Dot(dir, pts[1]);
-        if (dist > max_dist) {
-            max_dist = dist;
-            max_ndx = i;
-        }
-    }
-    return max_ndx;
-}
-
-real DistanceFromLine(const Vec3 &a, const Vec3 &b, const Vec3 &p) {
-    const Vec3 ab = Normalize(b - a);
-    const Vec3 ray = p - a;
-    const Vec3 proj = ab * Dot(ray, ab);
-    const Vec3 perp = ray - proj;
-    return Length(perp);
-}
-
-Vec3 FindPointFurthestFromLine(const Vec3 pts[], const int count, const Vec3 &a,
-                               const Vec3 &b) {
-    int max_ndx = 0;
-    real max_dist = DistanceFromLine(a, b, pts[0]);
-    for (int i = 1; i < count; i++) {
-        const real dist = DistanceFromLine(a, b, pts[i]);
-        if (dist > max_dist) {
-            max_dist = dist;
-            max_ndx = i;
-        }
-    }
-    return pts[max_ndx];
-}
-
-real SignedDistanceFromTriangle(const Vec3 &a, const Vec3 &b, const Vec3 &c,
-                                const Vec3 &p) {
-    const Vec3 ab = b - a;
-    const Vec3 ac = c - a;
-    const Vec3 n = Normalize(Cross(ab, ac));
-
-    const Vec3 ray = p - a;
-    return Dot(ray, n);
-}
-
-Vec3 FindPointFurthestFromTriangle(const Vec3 pts[], const int count, const Vec3 &a,
-                                   const Vec3 &b, const Vec3 &c) {
-    int max_ndx = 0;
-    real max_dist2 = SignedDistanceFromTriangle(a, b, c, pts[0]);
-    max_dist2 *= max_dist2;
-    for (int i = 1; i < count; i++) {
-        real dist2 = SignedDistanceFromTriangle(a, b, c, pts[i]);
-        dist2 *= dist2;
-        if (dist2 > max_dist2) {
-            max_dist2 = dist2;
-            max_ndx = i;
-        }
-    }
-    return pts[max_ndx];
-}
-
-struct tri_t {
-    int a, b, c;
-};
-
-void BuildTetrahedron(const Vec3 verts[], const int count, Vec3 tet_pts[4],
-                      tri_t tet_tris[4]) {
-    const int ndx0 =
-        FindPointFurthestInDir(verts, count, Vec3(real(1), real(0), real(0)));
-    tet_pts[0] = verts[ndx0];
-    const int ndx1 = FindPointFurthestInDir(verts, count, -tet_pts[0]);
-    tet_pts[1] = verts[ndx1];
-    tet_pts[2] = FindPointFurthestFromLine(verts, count, tet_pts[0], tet_pts[1]);
-    tet_pts[3] =
-        FindPointFurthestFromTriangle(verts, count, tet_pts[0], tet_pts[1], tet_pts[2]);
-
-    const real dist =
-        SignedDistanceFromTriangle(tet_pts[0], tet_pts[1], tet_pts[2], tet_pts[3]);
-    if (dist > real(0)) {
-        // ensure CCW order
-        std::swap(tet_pts[0], tet_pts[1]);
-    }
-    tet_tris[0] = {0, 1, 2};
-    tet_tris[1] = {0, 2, 3};
-    tet_tris[2] = {2, 1, 3};
-    tet_tris[3] = {1, 0, 3};
-}
 
 void RemoveInternalPoints(const Vec3 hull_pts[], const int pts_count,
                           const tri_t hull_tris[], const int tris_count,
@@ -165,12 +45,7 @@ void RemoveInternalPoints(const Vec3 hull_pts[], const int pts_count,
     }
 }
 
-struct edge_t {
-    int a, b;
-};
-bool operator==(const edge_t &e1, const edge_t &e2) {
-    return (e1.a == e2.a && e1.b == e2.b) || (e1.a == e2.b && e1.b == e2.a);
-}
+
 
 bool IsEdgeUnique(const tri_t tris[], const int facing_tris[], const int facing_count,
                   const int ignore_ndx, const edge_t edge) {
@@ -423,7 +298,7 @@ Phy::Mat3 Phy::ShapeBox::GetInverseInertiaTensor() const {
 
 Phy::Bounds Phy::ShapeBox::GetBounds(const Vec3 &pos, const Quat &rot) const {
     Vec3 corners[8];
-    PhyInternal::PointsFromBounds(bounds, corners);
+    bounds.ToPoints(corners);
 
     const Quat inv_rot = Inverse(rot);
 
@@ -493,9 +368,34 @@ void Phy::ShapeBox::Build(const Vec3 pts[], const int count) {
         bounds.Expand(pts[i]);
     }
 
-    PhyInternal::PointsFromBounds(bounds, points);
+    bounds.ToPoints(points);
 
     center_of_mass_ = real(0.5) * (bounds.mins + bounds.maxs);
+}
+
+Phy::Vec3 Phy::ShapeConvex::Support(const Vec3 &dir, const Vec3 &pos, const Quat &rot,
+                                    real bias) const {
+    Vec3 max_pt;
+    real max_dist = std::numeric_limits<real>::lowest();
+    for (int i = 0; i < int(points.size()); i++) {
+        Vec3 pt;
+        { // Rotate point
+            const Quat q = {pos[0], pos[1], pos[2], real(0)};
+            const Quat rq = rot * q * Inverse(rot);
+
+            pt[0] = rq.x;
+            pt[1] = rq.y;
+            pt[2] = rq.z;
+        }
+
+        const real dist = Dot(dir, pt);
+        if (dist > max_dist) {
+            max_dist = dist;
+            max_pt = pt;
+        }
+    }
+
+    return max_pt + Normalize(dir) * bias;
 }
 
 void Phy::ShapeConvex::Build(const Vec3 pts[], int pts_count) {

@@ -85,7 +85,7 @@ void JsString::Write(std::ostream &out, JsFlags /*flags*/) const {
 
 /////////////////////////////////////////////////////////////////
 
-JsArray::JsArray(const JsElement *v, size_t num) {
+JsArray::JsArray(const JsElement *v, const size_t num) {
     elements.assign(v, v + num);
 }
 
@@ -97,19 +97,19 @@ JsArray::JsArray(std::initializer_list<JsElement> &&l) {
     elements.assign(l);
 }*/
 
-JsElement &JsArray::operator[](size_t i) {
+JsElement &JsArray::operator[](const size_t i) {
     auto it = elements.begin();
     std::advance(it, i);
     return *it;
 }
 
-const JsElement &JsArray::operator[](size_t i) const {
+const JsElement &JsArray::operator[](const size_t i) const {
     auto it = elements.cbegin();
     std::advance(it, i);
     return *it;
 }
 
-const JsElement &JsArray::at(size_t i) const {
+const JsElement &JsArray::at(const size_t i) const {
     if (i >= Size()) throw std::out_of_range("Index out of range!");
     return operator[](i);
 }
@@ -179,13 +179,13 @@ void JsArray::Write(std::ostream &out, JsFlags flags) const {
 
 /////////////////////////////////////////////////////////////////
 
-const std::pair<std::string, JsElement>& JsObject::operator[](size_t i) const {
+const std::pair<std::string, JsElement>& JsObject::operator[](const size_t i) const {
     auto it = elements.cbegin();
     std::advance(it, i);
     return *it;
 }
 
-std::pair<std::string, JsElement> &JsObject::operator[](size_t i) {
+std::pair<std::string, JsElement> &JsObject::operator[](const size_t i) {
     auto it = elements.begin();
     std::advance(it, i);
     return *it;
@@ -345,7 +345,7 @@ JsElement::JsElement(const char *str) : type_(JsType::String) {
     new(&data_) JsString{ str };
 }
 
-JsElement::JsElement(JsType type) : type_(type) {
+JsElement::JsElement(const JsType type) : type_(type) {
     if (type_ == JsType::Literal) {
         new (&data_) JsLiteral{ JsLiteralType::Null };
     } else if (type_ == JsType::Number) {
@@ -581,7 +581,7 @@ bool JsElement::Read(std::istream &in) {
         type_ = JsType::Object;
         return reinterpret_cast<JsObject &>(data_).Read(in);
     } else {
-        if (isdigit(c) || c == '-') {
+        if (isdigit(c) || c == '-' || c == '+') {
             new (&data_) JsNumber{};
             type_ = JsType::Number;
             return reinterpret_cast<JsNumber &>(data_).Read(in);

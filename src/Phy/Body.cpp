@@ -1,5 +1,7 @@
 #include "Body.h"
 
+#include "Utils.h"
+
 Phy::Mat3 Phy::Body::GetInverseInertiaTensorWs() const {
     Mat3 orientation = ToMat3(rot);
     Mat3 orientation_transposed = Transpose(orientation);
@@ -109,6 +111,18 @@ void Phy::Body::Update(const real dt_s) {
 
         pos = com_ws + Vec3{rq.x, rq.y, rq.z};
     }
+}
+
+void Phy::Body::SupportOfMinkowskiSum(const Body &a, const Body &b, Vec3 dir,
+                                      const real bias, point_t &out_point) {
+    dir = Normalize(dir);
+
+    // Find the point on a furthest in direction
+    out_point.pt_a = a.shape->Support(+dir, a.pos, a.rot, bias);
+    // Find the point on b furthest in opposite direction
+    out_point.pt_b = b.shape->Support(-dir, b.pos, b.rot, bias);
+    // Find the point, in the minkowski sum, furthest in the direction
+    out_point.pt_s = out_point.pt_a - out_point.pt_b;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -223,6 +237,56 @@ void Phy::ResolveContact(contact_t &contact) {
         a->pos += ds * ta;
         b->pos -= ds * tb;
     }
+}
+
+bool Phy::GJK_DoesIntersect(const Body &a, const Body &b) {
+    const Vec3 Origin = Vec3(0);
+
+    int pts_count = 1;
+    point_t simplex_points[4];
+    Body::SupportOfMinkowskiSum(a, b, Vec3{1, 1, 1}, 0, simplex_points[0]);
+
+    real closest_dist = real(0);
+    bool does_contain_origin = false;
+    Vec3 new_dir = -simplex_points[0].pt_s;
+    do {
+        // Get the new point to check on
+        point_t new_pt;
+        Body::SupportOfMinkowskiSum(a, b, new_dir, 0, new_pt);
+
+        // If the new point is the same as previous, then we can not expand any further
+        if (HasPoint(simplex_points, new_pt)) {
+            break;
+        }
+
+        simplex_points[pts_count++] = new_pt;
+
+        const real _dot = Dot(new_dir, new_pt.pt_s - Origin);
+        if (_dot < real(0)) {
+            // Origin can not be in the set. There is no collision.
+            break;
+        }
+
+        Vec4 lambdas;
+        does_contain_origin =
+            SimplexSignedVolumes(simplex_points, pts_count, new_dir, lambdas);
+        if (does_contain_origin) {
+            break;
+        }
+
+        // Check that the new projection of the origin onto the simplex is closer than
+        // the previous
+        const real dist = Length2(new_dir);
+        if (dist >= closest_dist) {
+            break;
+        }
+        closest_dist = dist;
+
+        pts_count = SortValidPoints(simplex_points, lambdas);
+        does_contain_origin = (pts_count == 4);
+    } while (!does_contain_origin);
+
+    return does_contain_origin;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
