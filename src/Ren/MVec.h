@@ -302,7 +302,7 @@ template <typename T, int N> Vec<T, N> Fract(const Vec<T, N> &v) {
 }
 
 template <typename T, int N> Vec<T, N> Mod(const Vec<T, N> &x, const Vec<T, N> &y) {
-    return x - y * Ren::Floor(x / y);
+    return x - y * Floor(x / y);
 }
 
 template <typename T, int N> Vec<T, N> Step(const Vec<T, N> &x, const Vec<T, N> &edge) {

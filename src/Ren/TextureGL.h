@@ -211,6 +211,12 @@ class Framebuffer {
 
     uint32_t id() const { return id_; }
 
+    bool Setup(TexHandle color_attachment, TexHandle depth_attachment,
+               TexHandle stencil_attachment, bool is_multisampled) {
+        return Setup(&color_attachment, 1, depth_attachment, stencil_attachment,
+                     is_multisampled);
+    }
+
     bool Setup(const TexHandle color_attachments[], int color_attachments_count,
                TexHandle depth_attachment, TexHandle stencil_attachment,
                bool is_multisampled);

@@ -513,7 +513,6 @@ void Phy::FindDanglingEdges(const tri_t tris[], const int tris_count,
 
     for (int i = 0; i < tris_count; i++) {
         const tri_t &tri = tris[i];
-
         const edge_t edges[] = {{tri.a, tri.b}, {tri.b, tri.c}, {tri.c, tri.a}};
 
         int counts[3] = {};
@@ -524,7 +523,6 @@ void Phy::FindDanglingEdges(const tri_t tris[], const int tris_count,
             }
 
             const tri_t &tri2 = tris[j];
-
             const edge_t edges2[] = {
                 {tri2.a, tri2.b}, {tri2.b, tri2.c}, {tri2.c, tri2.a}};
 
@@ -545,6 +543,7 @@ void Phy::FindDanglingEdges(const tri_t tris[], const int tris_count,
         for (int k = 0; k < 3; k++) {
             if (!counts[k]) {
                 out_edges.push_back(edges[k]);
+                break;
             }
         }
     }

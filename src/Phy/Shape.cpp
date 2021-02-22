@@ -398,7 +398,7 @@ Phy::Vec3 Phy::ShapeConvex::Support(const Vec3 &dir, const Vec3 &pos, const Quat
     return max_pt + Normalize(dir) * bias;
 }
 
-void Phy::ShapeConvex::Build(const Vec3 pts[], int pts_count) {
+void Phy::ShapeConvex::Build(const Vec3 pts[], const int pts_count) {
     using namespace PhyInternal;
 
     // Expand into a convex hull
