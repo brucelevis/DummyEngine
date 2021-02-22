@@ -54,11 +54,20 @@ inline bool operator<(const contact_t &c1, const contact_t &c2) {
     return (c1.time_of_impact < c2.time_of_impact);
 }
 
-bool Intersect(Body *a, Body *b, const real dt, contact_t &out_contact);
+bool Intersect(Body *a, Body *b, contact_t &out_contact);
+bool Intersect(Body *a, Body *b, real dt, contact_t &out_contact);
 void ResolveContact(contact_t &contact);
 
+bool ConservativeAdvance(Body *a, Body *b, real dt, contact_t &out_contact);
+
+// Expanding Polytope Algorithm (EPA)
+real EPA_Expand(const Body &a, const Body &b, real bias, const point_t simplex_pts[4],
+                Vec3 &pt_on_a, Vec3 &pt_on_b);
+
 // Gilbert-Johnson-Keerthi (GJK)
-bool GJK_DoesIntersect(const Body &a, const Body &b);
+void GJK_ClosestPoints(const Body &a, const Body &b, Vec3 &pt_on_a, Vec3 &pt_on_b);
+bool GJK_DoesIntersect(const Body &a, const Body &b, real bias, Vec3 &pt_on_a,
+                       Vec3 &pt_on_b);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

@@ -20,18 +20,16 @@ int CountValidPoints(const Vec4 &lambdas) {
     }
     return count;
 }
-
-Vec3 NormalDirection(const tri_t &tri, const point_t points[]) {
-    const Vec3 &a = points[tri.a].pt_s;
-    const Vec3 &b = points[tri.b].pt_s;
-    const Vec3 &c = points[tri.c].pt_s;
-
-    const Vec3 ab = b - a;
-    const Vec3 ac = c - a;
-
-    return Normalize(Cross(ab, ac));
-}
 } // namespace PhyInternal
+
+void Phy::GetOrtho(const Vec3 &p, Vec3 &u, Vec3 &v) {
+    const Vec3 n = Normalize(p);
+
+    const Vec3 w = (n[2] * n[2] > real(0.9) * real(0.9)) ? Vec3{1, 0, 0} : Vec3{0, 0, 1};
+    u = Normalize(Cross(w, n));
+    v = Normalize(Cross(n, u));
+    u = Normalize(Cross(v, n));
+}
 
 bool Phy::RaySphere(const Vec3 &ro, const Vec3 &rd, const Vec3 &center, const real radius,
                     real &t1, real &t2) {
@@ -297,6 +295,17 @@ Phy::Vec4 Phy::SignedVolume3D(const Vec3 &a, const Vec3 &b, const Vec3 &c,
     return lambdas;
 }
 
+Phy::Vec3 Phy::GetNormalDirection(const tri_t &tri, const point_t points[]) {
+    const Vec3 &a = points[tri.a].pt_s;
+    const Vec3 &b = points[tri.b].pt_s;
+    const Vec3 &c = points[tri.c].pt_s;
+
+    const Vec3 ab = b - a;
+    const Vec3 ac = c - a;
+
+    return Normalize(Cross(ab, ac));
+}
+
 bool Phy::SimplexSignedVolumes(const point_t pts[], const int pts_count, Vec3 &new_dir,
                                Vec4 &out_lambdas) {
     const real EpsilonSqr = real(0.0001) * real(0.0001);
@@ -466,7 +475,7 @@ Phy::Vec3 Phy::BarycentricCoordinates(Vec3 s1, Vec3 s2, Vec3 s3, const Vec3 &pt)
 
 Phy::real Phy::SignedDistanceToTriangle(const tri_t &tri, const Vec3 &pt,
                                         const point_t points[]) {
-    const Vec3 normal = PhyInternal::NormalDirection(tri, points);
+    const Vec3 normal = PhyInternal::GetNormalDirection(tri, points);
     const Vec3 &a = points[tri.a].pt_s;
     const Vec3 a2pt = pt - a;
     const real dist = Dot(normal, a2pt);
@@ -482,7 +491,7 @@ int Phy::FindTriangleClosestToOrigin(const tri_t tris[], int tris_count,
         const tri_t &tri = tris[i];
 
         const real dist = SignedDistanceToTriangle(tri, Vec3{0}, points);
-        if (min_dist2 < dist * dist) {
+        if (dist * dist < min_dist2) {
             ndx = i;
             min_dist2 = dist * dist;
         }
@@ -543,7 +552,6 @@ void Phy::FindDanglingEdges(const tri_t tris[], const int tris_count,
         for (int k = 0; k < 3; k++) {
             if (!counts[k]) {
                 out_edges.push_back(edges[k]);
-                break;
             }
         }
     }

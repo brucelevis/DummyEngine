@@ -1,8 +1,12 @@
 #pragma once
 
+#include <vector>
+
 #include "Core.h"
 
 namespace Phy {
+void GetOrtho(const Vec3 &p, Vec3 &u, Vec3 &v);
+
 bool RaySphere(const Vec3 &ro, const Vec3 &rd, const Vec3 &center, const real radius,
                real &t1, real &t2);
 
@@ -36,6 +40,8 @@ inline bool operator==(const point_t &p1, const point_t &p2) {
     return (p1.pt_a == p2.pt_a) && (p1.pt_b == p2.pt_b) && (p1.pt_s == p2.pt_s);
 }
 
+Vec3 GetNormalDirection(const tri_t& tri, const point_t points[]);
+
 bool SimplexSignedVolumes(const point_t pts[], int pts_count, Vec3 &new_dir,
                           Vec4 &out_lambdas);
 
@@ -57,7 +63,7 @@ int RemoveTrianglesFacingPoint(const Vec3 &pt, std::vector<tri_t> &tris,
 struct edge_t {
     int a, b;
 };
-bool operator==(const edge_t& e1, const edge_t& e2) {
+inline bool operator==(const edge_t& e1, const edge_t& e2) {
     return (e1.a == e2.a && e1.b == e2.b) || (e1.a == e2.b && e1.b == e2.a);
 }
 

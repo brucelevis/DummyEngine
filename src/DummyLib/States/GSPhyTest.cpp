@@ -24,7 +24,7 @@ const char SCENE_NAME[] = "assets/scenes/"
 #else
 const char SCENE_NAME[] = "assets_pc/scenes/"
 #endif
-                          "physics_test.json";
+                          "phy_test.json";
 } // namespace GSPhyTestInternal
 
 GSPhyTest::GSPhyTest(GameBase *game) : GSBaseState(game) {}
@@ -44,7 +44,7 @@ void GSPhyTest::OnPreloadScene(JsObject &js_scene) {
     JsArray &js_objects = js_scene.at("objects").as_arr();
 
     // Dynamic spheres
-    for (int x = 0; x < 6; x++) {
+    for (int x = 0; x < 0; x++) {
         for (int z = 0; z < 6; z++) {
             const double Radius = 0.5;
             const double xx = double(x - 1LL) * Radius * 1.5;
@@ -101,8 +101,8 @@ void GSPhyTest::OnPreloadScene(JsObject &js_scene) {
     }
 
     // Static spheres
-    for (int x = 0; x < 3; x++) {
-        for (int z = 0; z < 3; z++) {
+    for (int x = 0; x < 1; x++) {
+        for (int z = 0; z < 1; z++) {
             const double Radius = 80;
             const double xx = double(x - 1LL) * Radius * 0.25;
             const double zz = double(z - 1LL) * Radius * 0.25;

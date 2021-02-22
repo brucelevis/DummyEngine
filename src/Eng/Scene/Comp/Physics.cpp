@@ -81,6 +81,8 @@ void Physics::Read(const JsObject &js_in, Physics &ph) {
             }
 
             ph.body.shape.reset(new Phy::ShapeBox{points.get(), int(js_points.Size())});
+        } else if (js_shape_type.val == "convex_hull") {
+
         }
     }
 }

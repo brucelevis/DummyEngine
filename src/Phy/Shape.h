@@ -19,7 +19,8 @@ class Shape {
     virtual Mat3 GetInverseInertiaTensor() const = 0;
     virtual Bounds GetBounds() const = 0;
     virtual Bounds GetBounds(const Vec3 &pos, const Quat &rot) const = 0;
-    virtual real GetFastestLinearSpeed(const Vec3 &vel_ang, const Vec3 &dir) const {
+    virtual real GetFastestLinearSpeedDueToRotation(const Vec3 &vel_ang,
+                                                    const Vec3 &dir) const {
         return real(0);
     }
 
@@ -72,7 +73,8 @@ class ShapeBox : public Shape {
 
     Bounds GetBounds() const override { return bounds; }
     Bounds GetBounds(const Vec3 &pos, const Quat &rot) const override;
-    real GetFastestLinearSpeed(const Vec3 &vel_ang, const Vec3 &dir) const override;
+    real GetFastestLinearSpeedDueToRotation(const Vec3 &vel_ang,
+                                            const Vec3 &dir) const override;
 
     Vec3 Support(const Vec3 &dir, const Vec3 &pos, const Quat &rot,
                  real bias) const override;
@@ -96,6 +98,8 @@ class ShapeConvex : public Shape {
     Mat3 inertia_tensor;
 };
 
+bool SphereSphereStatic(const ShapeSphere &a, const ShapeSphere &b, const Vec3 &pos_a,
+                        const Vec3 &pos_b, Vec3 &pt_on_a, Vec3 &pt_on_b);
 bool SphereSphereDynamic(const ShapeSphere &a, const ShapeSphere &b, const Vec3 &pos_a,
                          const Vec3 &pos_b, const Vec3 &vel_a, const Vec3 &vel_b, real dt,
                          Vec3 &pt_on_a, Vec3 &pt_on_b, real &toi);

@@ -156,7 +156,7 @@ template <typename T> T Dot(const QuatT<T> &lhs, const QuatT<T> &rhs) {
 }
 
 template <typename T> QuatT<T> Inverse(const QuatT<T>& q) {
-    auto res = QuatT<T>{ Uninitialize };
+    auto res = q;
 
     res /= Dot(q, q);
     res.x = -res.x;

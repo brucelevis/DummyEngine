@@ -45,8 +45,6 @@ void RemoveInternalPoints(const Vec3 hull_pts[], const int pts_count,
     }
 }
 
-
-
 bool IsEdgeUnique(const tri_t tris[], const int facing_tris[], const int facing_count,
                   const int ignore_ndx, const edge_t edge) {
     for (int i = 0; i < facing_count; i++) {
@@ -319,8 +317,8 @@ Phy::Bounds Phy::ShapeBox::GetBounds(const Vec3 &pos, const Quat &rot) const {
     return rbounds;
 }
 
-Phy::real Phy::ShapeBox::GetFastestLinearSpeed(const Vec3 &vel_ang,
-                                               const Vec3 &dir) const {
+Phy::real Phy::ShapeBox::GetFastestLinearSpeedDueToRotation(const Vec3 &vel_ang,
+                                                            const Vec3 &dir) const {
     real max_speed = real(0);
     for (int i = 0; i < 8; i++) {
         const Vec3 r = points[i] - center_of_mass_;
@@ -335,14 +333,13 @@ Phy::real Phy::ShapeBox::GetFastestLinearSpeed(const Vec3 &vel_ang,
 
 Phy::Vec3 Phy::ShapeBox::Support(const Vec3 &dir, const Vec3 &pos, const Quat &rot,
                                  const real bias) const {
-    // Start from the first point
     Vec3 max_pt;
-    real max_dist2 = std::numeric_limits<real>::max();
+    real max_dist2 = std::numeric_limits<real>::lowest();
 
     // Find the point that is the furthest in direction
     const Quat inv_rot = Inverse(rot);
     for (int i = 0; i < 8; i++) {
-        Vec3 pt = points[i];
+        Vec3 pt = pos + points[i];
 
         { // Rotate point
             const Quat q = {pt[0], pt[1], pt[2], real(0)};
@@ -354,7 +351,7 @@ Phy::Vec3 Phy::ShapeBox::Support(const Vec3 &dir, const Vec3 &pos, const Quat &r
         }
 
         const float dist2 = Dot(dir, pt);
-        if (dist2 < max_dist2) {
+        if (dist2 > max_dist2) {
             max_dist2 = dist2;
             max_pt = pt;
         }
@@ -377,6 +374,8 @@ Phy::Vec3 Phy::ShapeConvex::Support(const Vec3 &dir, const Vec3 &pos, const Quat
                                     real bias) const {
     Vec3 max_pt;
     real max_dist = std::numeric_limits<real>::lowest();
+
+    // Find the point that is the furthest in direction
     for (int i = 0; i < int(points.size()); i++) {
         Vec3 pt;
         { // Rotate point
@@ -415,6 +414,19 @@ void Phy::ShapeConvex::Build(const Vec3 pts[], const int pts_count) {
     inertia_tensor =
         CalculateInertiaTensor(points.data(), int(points.size()), hull_tris.data(),
                                int(hull_tris.size()), center_of_mass_);
+}
+
+bool Phy::SphereSphereStatic(const ShapeSphere &a, const ShapeSphere &b,
+                             const Vec3 &pos_a, const Vec3 &pos_b, Vec3 &pt_on_a,
+                             Vec3 &pt_on_b) {
+    const Vec3 ab = pos_b - pos_a;
+    const Vec3 norm = Normalize(ab);
+
+    pt_on_a = pos_a + norm * a.radius;
+    pt_on_b = pos_b - norm * b.radius;
+
+    const real radius_ab = a.radius + b.radius;
+    return (Length2(ab) <= (radius_ab * radius_ab));
 }
 
 bool Phy::SphereSphereDynamic(const ShapeSphere &a, const ShapeSphere &b,
